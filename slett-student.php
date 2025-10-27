@@ -1,23 +1,29 @@
 <?php
-$base_url = '/app/ammoh3419-Amalmoh-prg120v-oblig2/';
 include "db_connect.php";
 
-if(isset($_GET['klassekode'])) {
-    $kode = $_GET['klassekode'];
-    $conn->query("DELETE FROM klasse WHERE klassekode='$kode'");
-    header("Location: ".$base_url."vis-alle-klasser.php");
-    exit();
+$message = "";
+
+if(isset($_POST['brukernavn'])) {
+    $bruker = $_POST['brukernavn'];
+    $conn->query("DELETE FROM student WHERE brukernavn='$bruker'");
+    $message = "Student slettet!";
 }
 
-$result = $conn->query("SELECT * FROM klasse");
+$result = $conn->query("SELECT * FROM student");
 ?>
-<h2>Slett klasse</h2>
-<ul>
-<?php while($row = $result->fetch_assoc()) {
-    echo "<li>".$row['klassenavn']." <a href='".$base_url."slett-klasse.php?klassekode=".$row['klassekode']."'>Slett</a></li>";
-} ?>
-</ul>
-<a href="<?php echo $base_url; ?>index.php">Tilbake til meny</a>
+
+<h2>Slett student</h2>
+<?php if($message) echo "<p>$message</p>"; ?>
+<form method="post" onsubmit="return confirm('Er du sikker på at du vil slette studenten?');">
+    Velg student å slette:
+    <select name="brukernavn" required>
+        <?php while($row = $result->fetch_assoc()): ?>
+            <option value="<?= $row['brukernavn'] ?>"><?= $row['fornavn'] ?> <?= $row['etternavn'] ?></option>
+        <?php endwhile; ?>
+    </select>
+    <input type="submit" value="Slett student">
+</form>
+
 
 
 
