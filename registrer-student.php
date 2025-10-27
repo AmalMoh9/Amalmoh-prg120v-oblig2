@@ -1,38 +1,40 @@
 <?php
-include "db.php";
+$base_url = '/app/ammoh3419-Amalmoh-prg120v-oblig2/';
+include "db_connect.php";
 
-// Hent klasser for listeboks
-$klasseresultat = $conn->query("SELECT klassekode FROM klasse");
-?>
-
-<form method="post">
-    Brukernavn: <input type="text" name="brukernavn" required><br>
-    Fornavn: <input type="text" name="fornavn" required><br>
-    Etternavn: <input type="text" name="etternavn" required><br>
-    Klassekode:
-    <select name="klassekode">
-        <?php while($rad = $klasseresultat->fetch_assoc()): ?>
-            <option value="<?= $rad['klassekode'] ?>"><?= $rad['klassekode'] ?></option>
-        <?php endwhile; ?>
-    </select><br>
-    <input type="submit" value="Registrer student">
-</form>
-
-<?php
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $b = $_POST['brukernavn'];
-    $f = $_POST['fornavn'];
-    $e = $_POST['etternavn'];
-    $k = $_POST['klassekode'];
+    $brukernavn = $_POST['brukernavn'];
+    $fornavn = $_POST['fornavn'];
+    $etternavn = $_POST['etternavn'];
+    $klassekode = $_POST['klassekode'];
 
-    $sql = "INSERT INTO student VALUES ('$b', '$f', '$e', '$k')";
-    if ($conn->query($sql)) {
-        echo "Student registrert!";
+    $sql = "INSERT INTO student (brukernavn, fornavn, etternavn, klassekode) VALUES ('$brukernavn', '$fornavn', '$etternavn', '$klassekode')";
+    if ($conn->query($sql) === TRUE) {
+        header("Location: ".$base_url."vis-alle-studenter.php");
+        exit();
     } else {
         echo "Feil: " . $conn->error;
     }
 }
+
+// Hent klasser til dropdown
+$klasse_result = $conn->query("SELECT klassekode, klassenavn FROM klasse");
 ?>
+<h2>Registrer ny student</h2>
+<form method="post" action="<?php echo $base_url; ?>registrer-student.php">
+    Brukernavn: <input type="text" name="brukernavn"><br>
+    Fornavn: <input type="text" name="fornavn"><br>
+    Etternavn: <input type="text" name="etternavn"><br>
+    Klasse: 
+    <select name="klassekode">
+        <?php while($row = $klasse_result->fetch_assoc()) {
+            echo "<option value='".$row['klassekode']."'>".$row['klassenavn']."</option>";
+        } ?>
+    </select><br>
+    <input type="submit" value="Registrer">
+</form>
+<a href="<?php echo $base_url; ?>index.php">Tilbake til meny</a>
+
  
  
 
