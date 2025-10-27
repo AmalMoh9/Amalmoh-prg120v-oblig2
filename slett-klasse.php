@@ -2,22 +2,61 @@
 $base_url = '/app/ammoh3419-Amalmoh-prg120v-oblig2/';
 include "db_connect.php";
 
-if(isset($_GET['klassekode'])) {
-    $kode = $_GET['klassekode'];
-    $conn->query("DELETE FROM klasse WHERE klassekode='$kode'");
-    header("Location: ".$base_url."vis-alle-klasser.php");
-    exit();
-}
+$melding = "";
 
-$result = $conn->query("SELECT * FROM klasse");
+// Hent alle klasser for listeboks
+$klasseResult = $conn->query("SELECT klassekode, klassenavn FROM klasse");
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $klassekode = $_POST['klassekode'];
+
+    if ($klassekode == "") {
+        $melding = "Velg en klasse å slette!";
+    } else {
+        // Sjekk om det finnes studenter i klassen
+        $stmt_check = $conn->prepare("SELECT brukernavn FROM student WHERE klassekode = ?");
+        $stmt_check->bind_param("s", $klassekode);
+        $stmt_check->execute();
+        $stmt_check->store_result();
+
+        if ($stmt_check->num_rows > 0) {
+            $melding = "Kan ikke slette: Det finnes studenter i denne klassen.";
+        } else {
+            $stmt_delete = $conn->prepare("DELETE FROM klasse WHERE klassekode = ?");
+            $stmt_delete->bind_param("s", $klassekode);
+
+            if ($stmt_delete->execute()) {
+                $melding = "Klassen er slettet!";
+            } else {
+                $melding = "Noe gikk galt: " . $conn->error;
+            }
+            $stmt_delete->close();
+        }
+        $stmt_check->close();
+    }
+}
 ?>
+
 <h2>Slett klasse</h2>
-<ul>
-<?php while($row = $result->fetch_assoc()) {
-    echo "<li>".$row['klassenavn']." <a href='".$base_url."slett-klasse.php?klassekode=".$row['klassekode']."'>Slett</a></li>";
-} ?>
-</ul>
+<form method="post" action="<?php echo $base_url; ?>slett-klasse.php">
+    Klasse:
+    <select name="klassekode" required>
+        <?php
+        if ($klasseResult->num_rows > 0) {
+            while($row = $klasseResult->fetch_assoc()) {
+                echo "<option value='{$row['klassekode']}'>{$row['klassekode']} - {$row['klassenavn']}</option>";
+            }
+        } else {
+            echo "<option value=''>Ingen klasser registrert</option>";
+        }
+        ?>
+    </select><br>
+    <input type="submit" value="Slett">
+</form>
+
+<?php if($melding != "") { echo "<p style='color:red;'>$melding</p>"; } ?>
 <a href="<?php echo $base_url; ?>index.php">Tilbake til meny</a>
+
 
 
 
