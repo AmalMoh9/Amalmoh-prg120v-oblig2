@@ -4,42 +4,53 @@ include "db_connect.php";
 
 $melding = "";
 
-// Hent alle studenter fra databasen
-$studentResult = $conn->query("SELECT brukernavn, fornavn, etternavn FROM student");
+// Hent alle klasser for listeboks
+$klasseResult = $conn->query("SELECT klassekode, klassenavn FROM klasse");
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $brukernavn = $_POST['brukernavn'];
+    $klassekode = $_POST['klassekode'];
 
-    if ($brukernavn == "") {
-        $melding = "Velg en student å slette!";
+    if ($klassekode == "") {
+        $melding = "Velg en klasse å slette!";
     } else {
-        $stmt_delete = $conn->prepare("DELETE FROM student WHERE brukernavn = ?");
-        $stmt_delete->bind_param("s", $brukernavn);
+        // Sjekk om det finnes studenter i klassen
+        $stmt_check = $conn->prepare("SELECT brukernavn FROM student WHERE klassekode = ?");
+        $stmt_check->bind_param("s", $klassekode);
+        $stmt_check->execute();
+        $stmt_check->store_result();
 
-        if ($stmt_delete->execute()) {
-            $melding = "Studenten er slettet!";
+        if ($stmt_check->num_rows > 0) {
+            $melding = "Kan ikke slette: Det finnes studenter i denne klassen.";
         } else {
-            $melding = "Noe gikk galt: " . $conn->error;
-        }
-        $stmt_delete->close();
+            $stmt_delete = $conn->prepare("DELETE FROM klasse WHERE klassekode = ?");
+            $stmt_delete->bind_param("s", $klassekode);
 
-        // Oppdater listen etter sletting
-        $studentResult = $conn->query("SELECT brukernavn, fornavn, etternavn FROM student");
+            if ($stmt_delete->execute()) {
+                $melding = "Klassen er slettet!";
+            } else {
+                $melding = "Noe gikk galt: " . $conn->error;
+            }
+            $stmt_delete->close();
+
+            // Oppdater listeboksen etter sletting
+            $klasseResult = $conn->query("SELECT klassekode, klassenavn FROM klasse");
+        }
+        $stmt_check->close();
     }
 }
 ?>
 
-<h2>Slett student</h2>
-<form method="post" action="<?php echo $base_url; ?>slett-student.php">
-    Student:
-    <select name="brukernavn" required>
+<h2>Slett klasse</h2>
+<form method="post" action="<?php echo $base_url; ?>slett-klasse.php">
+    Klasse:
+    <select name="klassekode" required>
         <?php
-        if ($studentResult->num_rows > 0) {
-            while($row = $studentResult->fetch_assoc()) {
-                echo "<option value='{$row['brukernavn']}'>{$row['brukernavn']} - {$row['fornavn']} {$row['etternavn']}</option>";
+        if ($klasseResult->num_rows > 0) {
+            while($row = $klasseResult->fetch_assoc()) {
+                echo "<option value='{$row['klassekode']}'>{$row['klassekode']} - {$row['klassenavn']}</option>";
             }
         } else {
-            echo "<option value=''>Ingen studenter registrert</option>";
+            echo "<option value=''>Ingen klasser registrert</option>";
         }
         ?>
     </select><br>
@@ -49,6 +60,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <?php if($melding != "") { echo "<p style='color:red;'>$melding</p>"; } ?>
 
 <a href="<?php echo $base_url; ?>index.php">Tilbake til meny</a>
+
 
      
 
