@@ -16,25 +16,33 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $etternavn = trim($_POST['etternavn']);
     $klassekode = $_POST['klassekode'];
 
-    // Sjekk at brukeren har valgt en klasse
     if ($klassekode == "") {
         $melding = "Velg en klasse!";
     } else {
-        // Sett inn student i databasen
-        $stmt = $conn->prepare("INSERT INTO student (brukernavn, fornavn, etternavn, klassekode) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("ssss", $brukernavn, $fornavn, $etternavn, $klassekode);
+        // Sjekk om brukernavn allerede finnes
+        $stmt_check = $conn->prepare("SELECT brukernavn FROM student WHERE brukernavn = ?");
+        $stmt_check->bind_param("s", $brukernavn);
+        $stmt_check->execute();
+        $stmt_check->store_result();
 
-        if ($stmt->execute()) {
-            $melding = "Student registrert!";
+        if ($stmt_check->num_rows > 0) {
+            $melding = "Feil: Dette brukernavnet finnes allerede. Velg et annet.";
         } else {
-            $melding = "Noe gikk galt: " . $conn->error;
-        }
+            // Sett inn student
+            $stmt = $conn->prepare("INSERT INTO student (brukernavn, fornavn, etternavn, klassekode) VALUES (?, ?, ?, ?)");
+            $stmt->bind_param("ssss", $brukernavn, $fornavn, $etternavn, $klassekode);
 
-        $stmt->close();
+            if ($stmt->execute()) {
+                $melding = "Student registrert!";
+            } else {
+                $melding = "Noe gikk galt: " . $conn->error;
+            }
+            $stmt->close();
+        }
+        $stmt_check->close();
     }
 }
 ?>
-
 <h2>Registrer ny student</h2>
 <form method="post" action="<?php echo $base_url; ?>registrer-student.php">
     Brukernavn: <input type="text" name="brukernavn" required><br>
@@ -54,10 +62,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </select><br>
     <input type="submit" value="Registrer">
 </form>
-
 <?php if($melding != "") { echo "<p style='color:red;'>$melding</p>"; } ?>
-
 <a href="<?php echo $base_url; ?>index.php">Tilbake til meny</a>
+
 
 
  
