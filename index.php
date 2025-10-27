@@ -1,18 +1,22 @@
+<?php
+$base_url = '/app/ammoh3419-Amalmoh-prg120v-oblig2/';
+?>
 <!DOCTYPE html>
-<html>
+<html lang="no">
 <head>
-    <title>Student/Klasse-applikasjon</title>
+    <meta charset="UTF-8">
+    <title>Velkommen</title>
 </head>
 <body>
-    <h1>Velkommen</h1>
-    <ul>
-        <li><a href="registrer_klasse.php">Registrer ny klasse</a></li>
-        <li><a href="registrer_student.php">Registrer ny student</a></li>
-        <li><a href="vis_klasser.php">Vis alle klasser</a></li>
-        <li><a href="vis_studenter.php">Vis alle studenter</a></li>
-        <li><a href="slett_klasse.php">Slett klasse</a></li>
-        <li><a href="slett_student.php">Slett student</a></li>
-    </ul>
+<h1>Velkommen</h1>
+<ul>
+    <li><a href="<?php echo $base_url; ?>registrer-klasse.php">Registrer ny klasse</a></li>
+    <li><a href="<?php echo $base_url; ?>registrer-student.php">Registrer ny student</a></li>
+    <li><a href="<?php echo $base_url; ?>vis-alle-klasser.php">Vis alle klasser</a></li>
+    <li><a href="<?php echo $base_url; ?>vis-alle-studenter.php">Vis alle studenter</a></li>
+    <li><a href="<?php echo $base_url; ?>slett-klasse.php">Slett klasse</a></li>
+    <li><a href="<?php echo $base_url; ?>slett-student.php">Slett student</a></li>
+</ul>
 </body>
 </html>
 
