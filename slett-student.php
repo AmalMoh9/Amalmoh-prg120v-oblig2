@@ -1,28 +1,55 @@
 <?php
+$base_url = '/app/ammoh3419-Amalmoh-prg120v-oblig2/';
 include "db_connect.php";
 
-$message = "";
+$melding = "";
 
-if(isset($_POST['brukernavn'])) {
-    $bruker = $_POST['brukernavn'];
-    $conn->query("DELETE FROM student WHERE brukernavn='$bruker'");
-    $message = "Student slettet!";
+// Hent alle studenter fra databasen
+$studentResult = $conn->query("SELECT brukernavn, fornavn, etternavn FROM student");
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $brukernavn = $_POST['brukernavn'];
+
+    if ($brukernavn == "") {
+        $melding = "Velg en student å slette!";
+    } else {
+        $stmt_delete = $conn->prepare("DELETE FROM student WHERE brukernavn = ?");
+        $stmt_delete->bind_param("s", $brukernavn);
+
+        if ($stmt_delete->execute()) {
+            $melding = "Studenten er slettet!";
+        } else {
+            $melding = "Noe gikk galt: " . $conn->error;
+        }
+        $stmt_delete->close();
+
+        // Oppdater listen etter sletting
+        $studentResult = $conn->query("SELECT brukernavn, fornavn, etternavn FROM student");
+    }
 }
-
-$result = $conn->query("SELECT * FROM student");
 ?>
 
 <h2>Slett student</h2>
-<?php if($message) echo "<p>$message</p>"; ?>
-<form method="post" onsubmit="return confirm('Er du sikker på at du vil slette studenten?');">
-    Velg student å slette:
+<form method="post" action="<?php echo $base_url; ?>slett-student.php">
+    Student:
     <select name="brukernavn" required>
-        <?php while($row = $result->fetch_assoc()): ?>
-            <option value="<?= $row['brukernavn'] ?>"><?= $row['fornavn'] ?> <?= $row['etternavn'] ?></option>
-        <?php endwhile; ?>
-    </select>
-    <input type="submit" value="Slett student">
+        <?php
+        if ($studentResult->num_rows > 0) {
+            while($row = $studentResult->fetch_assoc()) {
+                echo "<option value='{$row['brukernavn']}'>{$row['brukernavn']} - {$row['fornavn']} {$row['etternavn']}</option>";
+            }
+        } else {
+            echo "<option value=''>Ingen studenter registrert</option>";
+        }
+        ?>
+    </select><br>
+    <input type="submit" value="Slett">
 </form>
+
+<?php if($melding != "") { echo "<p style='color:red;'>$melding</p>"; } ?>
+
+<a href="<?php echo $base_url; ?>index.php">Tilbake til meny</a>
+
 
 
 
