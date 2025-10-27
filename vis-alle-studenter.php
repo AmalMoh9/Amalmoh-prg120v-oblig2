@@ -1,16 +1,19 @@
 <?php
-include "db.php";
+$base_url = '/app/ammoh3419-Amalmoh-prg120v-oblig2/';
+include "db_connect.php";
 
-$resultat = $conn->query("SELECT * FROM student");
-
-echo "<h2>Alle studenter</h2>";
-echo "<table border='1'><tr><th>Brukernavn</th><th>Fornavn</th><th>Etternavn</th><th>Klasse</th></tr>";
-
-while ($rad = $resultat->fetch_assoc()) {
-    echo "<tr><td>{$rad['brukernavn']}</td><td>{$rad['fornavn']}</td><td>{$rad['etternavn']}</td><td>{$rad['klassekode']}</td></tr>";
-}
-
-echo "</table>";
+$result = $conn->query("SELECT s.brukernavn, s.fornavn, s.etternavn, k.klassenavn 
+                        FROM student s 
+                        JOIN klasse k ON s.klassekode = k.klassekode");
 ?>
+<h2>Alle studenter</h2>
+<table border="1">
+<tr><th>Brukernavn</th><th>Fornavn</th><th>Etternavn</th><th>Klasse</th></tr>
+<?php while($row = $result->fetch_assoc()) {
+    echo "<tr><td>".$row['brukernavn']."</td><td>".$row['fornavn']."</td><td>".$row['etternavn']."</td><td>".$row['klassenavn']."</td></tr>";
+} ?>
+</table>
+<a href="<?php echo $base_url; ?>index.php">Tilbake til meny</a>
+
 
 
