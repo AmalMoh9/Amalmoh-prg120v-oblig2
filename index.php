@@ -4,7 +4,7 @@
     <title>Student/Klasse-applikasjon</title>
 </head>
 <body>
-    <h1>Velkommen til administrasjonssystemet</h1>
+    <h1>Velkommen</h1>
     <ul>
         <li><a href="registrer_klasse.php">Registrer ny klasse</a></li>
         <li><a href="registrer_student.php">Registrer ny student</a></li>
